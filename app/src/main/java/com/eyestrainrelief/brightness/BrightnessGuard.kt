@@ -1,0 +1,135 @@
+package com.eyestrainrelief.brightness
+
+import android.content.Context
+import android.database.ContentObserver
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
+import android.util.Log
+import com.eyestrainrelief.core.Prefs
+import com.eyestrainrelief.shell.ShizukuShell
+import kotlin.math.roundToInt
+
+/**
+ * 最低亮度守卫。
+ *
+ * 用 ContentObserver 监听 SCREEN_BRIGHTNESS，属于事件驱动，没有任何轮询开销：
+ * 只有亮度真的变化时才醒一次，值低于阈值就写回。
+ *
+ * 写入走双通道：优先 WRITE_SETTINGS（无 IPC 延迟，拖动滑块时不会卡），
+ * 没有该权限则退回 Shizuku 执行 settings 命令。
+ *
+ * 注意：自动亮度模式下系统会按环境光持续覆盖，本守卫会与其形成拉锯——
+ * 每次被调低都会被拉回，用户不会看到低于阈值，但亮度可能在阈值附近小幅波动。
+ */
+class BrightnessGuard(
+    private val context: Context,
+    private val prefs: Prefs
+) {
+
+    private val appContext = context.applicationContext
+    private val handler = Handler(Looper.getMainLooper())
+    private var registered = false
+
+    private val observer = object : ContentObserver(handler) {
+        override fun onChange(selfChange: Boolean) {
+            enforce()
+        }
+    }
+
+    fun start() {
+        if (registered) return
+        try {
+            appContext.contentResolver.registerContentObserver(
+                Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS),
+                false,
+                observer
+            )
+            registered = true
+            // 启动时先纠正一次当前值
+            enforce()
+        } catch (t: Throwable) {
+            Log.w(TAG, "register brightness observer failed", t)
+        }
+    }
+
+    fun stop() {
+        if (!registered) return
+        try {
+            appContext.contentResolver.unregisterContentObserver(observer)
+        } catch (_: Throwable) {
+        }
+        registered = false
+    }
+
+    /**
+     * 检查并拉回。幂等：写回后会再次触发 observer，此时值已达标直接返回，不会形成死循环。
+     */
+    fun enforce() {
+        val percent = prefs.minBrightnessPercent
+        if (percent <= 0) return
+        val minValue = (percent / 100.0 * MAX_BRIGHTNESS).roundToInt().coerceIn(1, MAX_BRIGHTNESS)
+        val current = readCurrent()
+        if (current < 0 || current >= minValue) return
+        Log.d(TAG, "brightness $current below min $minValue, restoring")
+        write(minValue)
+    }
+
+    private fun readCurrent(): Int = try {
+        Settings.System.getInt(
+            appContext.contentResolver,
+            Settings.System.SCREEN_BRIGHTNESS,
+            -1
+        )
+    } catch (_: Throwable) {
+        -1
+    }
+
+    private fun write(value: Int): Boolean {
+        if (canWriteDirectly()) {
+            return try {
+                Settings.System.putInt(
+                    appContext.contentResolver,
+                    Settings.System.SCREEN_BRIGHTNESS,
+                    value
+                )
+            } catch (_: Throwable) {
+                false
+            }
+        }
+        if (ShizukuShell.hasPermission()) {
+            ShizukuShell.execAsync("settings put system screen_brightness $value")
+            return true
+        }
+        return false
+    }
+
+    /** 是否具备直接写系统设置的权限 */
+    fun canWriteDirectly(): Boolean = try {
+        Settings.System.canWrite(appContext)
+    } catch (_: Throwable) {
+        false
+    }
+
+    /** 自动亮度是否开启——开启时本功能会被系统持续覆盖，需要在界面上提示 */
+    fun isAutoBrightnessOn(): Boolean = try {
+        Settings.System.getInt(
+            appContext.contentResolver,
+            Settings.System.SCREEN_BRIGHTNESS_MODE,
+            Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL
+        ) == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
+    } catch (_: Throwable) {
+        false
+    }
+
+    fun readCurrentPercent(): Int {
+        val value = readCurrent()
+        if (value < 0) return -1
+        return (value * 100.0 / MAX_BRIGHTNESS).roundToInt()
+    }
+
+    private companion object {
+        const val TAG = "ESR"
+        const val MAX_BRIGHTNESS = 255
+    }
+}

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ESR</string>
+    <string name="accessibility_desc">用于显示全屏休息浮窗，并在浮窗期间接收音量键以便紧急退出。</string>
+</resources>
