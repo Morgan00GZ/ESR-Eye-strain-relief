@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  简体中文。只有 zh-rCN 会命中这里；繁体（zh-TW / zh-HK）按产品要求回落英文。
+-->
+<resources>
+    <string name="app_name">ESR</string>
+    <string name="accessibility_desc">用于显示全屏休息浮窗，并在浮窗期间接收音量键以便紧急退出。</string>
+
+    <string name="intro_main">屏幕连续使用达到阈值后弹出全屏休息浮窗，倒计时结束自动消失。</string>
+    <string name="intro_escape">浮窗出现时连续按音量下键 5 次可紧急退出，用于异常情况自保。</string>
+    <string name="intro_brightness">最低亮度：屏幕亮度低于该值时自动拉回，设为 0 或留空则不启用。</string>
+
+    <string name="label_accessibility">无障碍服务</string>
+    <string name="label_shizuku">Shizuku 权限</string>
+    <string name="label_used">本轮已用</string>
+    <string name="label_until_break">距提醒</string>
+    <string name="label_phase">计时状态</string>
+    <string name="label_brightness">屏幕亮度</string>
+    <string name="label_min_brightness">最低亮度</string>
+    <string name="label_write_settings">修改系统设置</string>
+
+    <string name="btn_enable_accessibility">开启无障碍服务</string>
+    <string name="btn_grant_shizuku">授权 Shizuku（媒体控制）</string>
+    <string name="btn_test_overlay">立即测试一次浮窗</string>
+    <string name="btn_reset">重置计数</string>
+    <string name="btn_save_threshold">保存阈值</string>
+    <string name="btn_save_brightness">保存最低亮度</string>
+    <string name="btn_allow_write_settings">允许修改系统设置</string>
+
+    <string name="title_threshold">阈值（分钟）</string>
+    <string name="hint_brightness">最低亮度 %（1-100，0 或留空 = 关闭）</string>
+    <string name="toast_shizuku_missing">未检测到 Shizuku，请先在手机上启动 Shizuku 服务</string>
+    <string name="toast_shizuku_granted">Shizuku 已授权</string>
+    <string name="toast_need_accessibility">请先开启无障碍服务</string>
+    <string name="toast_reset_done">已重置</string>
+    <string name="toast_invalid_minutes">请输入正整数分钟</string>
+    <string name="toast_threshold_saved">已保存，阈值 %1$d 分钟</string>
+    <string name="toast_invalid_brightness">请输入 0-100 的整数，0 表示关闭</string>
+    <string name="toast_brightness_off">已关闭最低亮度</string>
+    <string name="toast_brightness_saved">已设置最低亮度 %1$d%%</string>
+    <string name="toast_write_granted">已具备修改亮度的权限</string>
+    <string name="toast_write_failed">无法打开设置页，请手动到「特殊权限 → 修改系统设置」授权</string>
+
+    <string name="state_enabled">已开启</string>
+    <string name="state_disabled">未开启</string>
+    <string name="state_not_running">未运行</string>
+    <string name="state_granted">已授权</string>
+    <string name="state_not_granted">未授权</string>
+    <string name="state_service_stopped">服务未运行</string>
+    <string name="state_read_failed">读取失败</string>
+    <string name="state_not_set">未设置</string>
+    <string name="phase_no_gaze">未检测到注视，已暂停</string>
+    <string name="phase_gaze">注视计时中</string>
+    <string name="phase_screen">亮屏计时中</string>
+    <string name="phase_screen_off">已暂停（屏幕熄灭）</string>
+
+    <string name="fmt_until_break">%1$s（阈值 %2$d 分钟）</string>
+    <string name="fmt_brightness_with_min">%1$d%%（下限 %2$d%%）</string>
+    <string name="fmt_percent">%1$d%%</string>
+    <string name="fmt_duration_min_sec">%1$d分%2$d秒</string>
+    <string name="fmt_duration_sec">%1$d秒</string>
+
+    <string name="channel_name">屏幕计时</string>
+    <string name="notif_title">屏幕休息提醒</string>
+    <string name="notif_tracking">正在统计屏幕使用时长</string>
+    <string name="notif_guard_off">无障碍服务未开启，浮窗无法显示</string>
+    <string name="notif_gaze_paused">未检测到注视，已暂停（已用 %1$d 分钟）</string>
+    <string name="notif_used">已用 %1$d 分钟，距提醒约 %2$d 分钟</string>
+    <string name="notif_screen_off">已用 %1$d 分钟（屏幕熄灭，暂停计时）</string>
+    <string name="notif_cannot_show">无法显示休息浮窗</string>
+    <string name="notif_enable_guard">请在系统设置中开启 ESR 的无障碍服务</string>
+
+    <string name="overlay_hint">休息一下</string>
+    <string name="overlay_pause">暂停活动</string>
+    <string name="overlay_resume">继续活动</string>
+    <string name="overlay_content_desc">休息倒计时</string>
+
+    <string name="toast_shizuku_denied">Shizuku 授权被拒绝</string>
+
+    <string name="date_pattern">yyyy年M月d日 EEEE</string>
+    <string name="time_pattern">a h:mm:ss</string>
+</resources>

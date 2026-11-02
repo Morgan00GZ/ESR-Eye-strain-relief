@@ -12,6 +12,7 @@ import android.view.Gravity
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.eyestrainrelief.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -48,8 +49,14 @@ class BreakOverlay(private val context: Context) {
     /** 上次刷新时钟的整秒，同一秒内的多次 tick 不重复写文本 */
     private var lastClockSecond = -1L
 
-    private val dateFormat = SimpleDateFormat("yyyy年M月d日 EEEE", Locale.CHINA)
-    private val timeFormat = SimpleDateFormat("a h:mm:ss", Locale.CHINA)
+    // 格式串取自资源：中文「yyyy年M月d日 EEEE / a h:mm:ss」，英文「yyyy-MM-dd EEEE / h:mm:ss a」
+    // locale 用系统默认值，这样星期名、AM/PM 才会与界面对应语言一致
+    private val dateFormat = SimpleDateFormat(
+        context.getString(R.string.date_pattern), Locale.getDefault()
+    )
+    private val timeFormat = SimpleDateFormat(
+        context.getString(R.string.time_pattern), Locale.getDefault()
+    )
 
     /** 暂停按钮状态变化：true 表示已请求暂停活动应用 */
     var onPauseToggle: ((Boolean) -> Unit)? = null
@@ -188,7 +195,9 @@ class BreakOverlay(private val context: Context) {
 
     private fun togglePause() {
         paused = !paused
-        pauseButton?.text = if (paused) "继续活动" else "暂停活动"
+        pauseButton?.text = context.getString(
+            if (paused) R.string.overlay_resume else R.string.overlay_pause
+        )
         pauseButton?.alpha = if (paused) 0.7f else 1f
         onPauseToggle?.invoke(paused)
     }
@@ -201,7 +210,7 @@ class BreakOverlay(private val context: Context) {
             // 可点击但不拦截分发：空白区域吞掉触摸，子按钮仍能正常响应
             isClickable = true
             isFocusable = false
-            contentDescription = "休息倒计时"
+            contentDescription = context.getString(R.string.overlay_content_desc)
         }
 
         // 时间两行：亮度取「休息一下」同款灰，21sp（在 15sp 基础上放大 40%）
@@ -238,7 +247,7 @@ class BreakOverlay(private val context: Context) {
             setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 16f)
             gravity = Gravity.CENTER
             letterSpacing = 0.12f
-            text = "休息一下"
+            text = context.getString(R.string.overlay_hint)
         }
 
         val pause = TextView(context).apply {
@@ -246,7 +255,7 @@ class BreakOverlay(private val context: Context) {
             setTextColor(Color.WHITE)
             setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 15f)
             gravity = Gravity.CENTER
-            text = "暂停活动"
+            text = context.getString(R.string.overlay_pause)
             background = GradientDrawable().apply {
                 cornerRadius = dp(32).toFloat()
                 setColor(BUTTON_BG)

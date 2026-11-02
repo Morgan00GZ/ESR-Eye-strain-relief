@@ -23,6 +23,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import com.eyestrainrelief.R
 import android.widget.Toast
 import com.eyestrainrelief.access.GuardAccessibilityService
 import com.eyestrainrelief.core.Prefs
@@ -55,8 +56,9 @@ class MainActivity : Activity() {
             if (requestCode == ShizukuShell.PERMISSION_REQUEST_CODE) {
                 refreshStatus()
                 toast(
-                    if (grantResult == PackageManager.PERMISSION_GRANTED) "Shizuku 已授权"
-                    else "Shizuku 授权被拒绝"
+                    if (grantResult == PackageManager.PERMISSION_GRANTED)
+                        getString(R.string.toast_shizuku_granted)
+                    else getString(R.string.toast_shizuku_denied)
                 )
             }
         }
@@ -131,66 +133,66 @@ class MainActivity : Activity() {
         root.addView(text("ESR", 26f, Color.parseColor("#111111"), bold = true))
         root.addView(
             text(
-                "屏幕连续使用达到阈值后弹出全屏休息浮窗，倒计时结束自动消失。",
+                getString(R.string.intro_main),
                 13f, Color.parseColor("#6E7681")
             ).apply { setPadding(0, dp(8), 0, dp(6)) }
         )
         root.addView(
             text(
-                "浮窗出现时连续按音量下键 5 次可紧急退出，用于异常情况自保。",
+                getString(R.string.intro_escape),
                 12f, Color.parseColor("#8A8A8A")
             ).apply { setPadding(0, 0, 0, dp(6)) }
         )
         root.addView(
             text(
-                "最低亮度：屏幕亮度低于该值时自动拉回，设为 0 或留空则不启用。",
+                getString(R.string.intro_brightness),
                 12f, Color.parseColor("#8A8A8A")
             ).apply { setPadding(0, 0, 0, dp(20)) }
         )
 
         root.addView(card {
-            accessibilityValue = row(it, "无障碍服务")
-            shizukuValue = row(it, "Shizuku 权限")
-            usedValue = row(it, "本轮已用")
-            leftValue = row(it, "距提醒")
-            phaseValue = row(it, "计时状态")
-            brightnessValue = row(it, "屏幕亮度")
-            minBrightnessValue = row(it, "最低亮度")
-            writeSettingsValue = row(it, "修改系统设置")
+            accessibilityValue = row(it, getString(R.string.label_accessibility))
+            shizukuValue = row(it, getString(R.string.label_shizuku))
+            usedValue = row(it, getString(R.string.label_used))
+            leftValue = row(it, getString(R.string.label_until_break))
+            phaseValue = row(it, getString(R.string.label_phase))
+            brightnessValue = row(it, getString(R.string.label_brightness))
+            minBrightnessValue = row(it, getString(R.string.label_min_brightness))
+            writeSettingsValue = row(it, getString(R.string.label_write_settings))
         })
 
         root.addView(
-            actionButton("开启无障碍服务") {
+            actionButton(getString(R.string.btn_enable_accessibility)) {
                 startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             }
         )
         root.addView(
-            actionButton("授权 Shizuku（媒体控制）") {
+            actionButton(getString(R.string.btn_grant_shizuku)) {
                 when {
                     !ShizukuShell.isAvailable() ->
-                        toast("未检测到 Shizuku，请先在手机上启动 Shizuku 服务")
+                        toast(getString(R.string.toast_shizuku_missing))
                     ShizukuShell.hasPermission() ->
-                        toast("Shizuku 已授权")
+                        toast(getString(R.string.toast_shizuku_granted))
                     else ->
                         ShizukuShell.requestPermission()
                 }
             }
         )
         root.addView(
-            actionButton("立即测试一次浮窗") {
+            actionButton(getString(R.string.btn_test_overlay)) {
                 val ok = MonitorService.instance?.triggerNow() ?: false
-                if (!ok) toast("请先开启无障碍服务")
+                if (!ok) toast(getString(R.string.toast_need_accessibility))
             }
         )
         root.addView(
-            actionButton("重置计数") {
+            actionButton(getString(R.string.btn_reset)) {
                 MonitorService.instance?.resetCounter()
-                toast("已重置")
+                toast(getString(R.string.toast_reset_done))
             }
         )
 
         root.addView(
-            text("阈值（分钟）", 15f, Color.parseColor("#111111"), bold = true)
+            text(getString(R.string.title_threshold), 15f, Color.parseColor("#111111"), bold = true)
                 .apply { setPadding(0, dp(24), 0, dp(10)) }
         )
         thresholdInput = EditText(this).apply {
@@ -206,21 +208,21 @@ class MainActivity : Activity() {
             )
         )
         root.addView(
-            actionButton("保存阈值") {
+            actionButton(getString(R.string.btn_save_threshold)) {
                 val minutes = thresholdInput.text.toString().toLongOrNull() ?: 0L
                 if (minutes <= 0L) {
-                    toast("请输入正整数分钟")
+                    toast(getString(R.string.toast_invalid_minutes))
                 } else {
                     prefs.thresholdMs = minutes * 60_000L
                     MonitorService.start(this)
-                    toast("已保存，阈值 $minutes 分钟")
+                    toast(getString(R.string.toast_threshold_saved, minutes))
                 }
             }
         )
 
         brightnessInput = EditText(this).apply {
             inputType = InputType.TYPE_CLASS_NUMBER
-            hint = "最低亮度 %（1-100，0 或留空 = 关闭）"
+            hint = getString(R.string.hint_brightness)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
             val saved = prefs.minBrightnessPercent
             setText(if (saved > 0) saved.toString() else "")
@@ -233,22 +235,25 @@ class MainActivity : Activity() {
             ).apply { topMargin = dp(14) }
         )
         root.addView(
-            actionButton("保存最低亮度") {
+            actionButton(getString(R.string.btn_save_brightness)) {
                 val raw = brightnessInput.text.toString().trim()
                 val percent = if (raw.isEmpty()) 0 else (raw.toIntOrNull() ?: -1)
                 if (percent < 0 || percent > 100) {
-                    toast("请输入 0-100 的整数，0 表示关闭")
+                    toast(getString(R.string.toast_invalid_brightness))
                 } else {
                     prefs.minBrightnessPercent = percent
                     MonitorService.start(this)
-                    toast(if (percent == 0) "已关闭最低亮度" else "已设置最低亮度 $percent%")
+                    toast(
+                        if (percent == 0) getString(R.string.toast_brightness_off)
+                        else getString(R.string.toast_brightness_saved, percent)
+                    )
                 }
             }
         )
         root.addView(
-            actionButton("允许修改系统设置") {
+            actionButton(getString(R.string.btn_allow_write_settings)) {
                 if (Settings.System.canWrite(this)) {
-                    toast("已具备修改亮度的权限")
+                    toast(getString(R.string.toast_write_granted))
                 } else {
                     try {
                         startActivity(
@@ -258,7 +263,7 @@ class MainActivity : Activity() {
                             )
                         )
                     } catch (_: Throwable) {
-                        toast("无法打开设置页，请手动到「特殊权限 → 修改系统设置」授权")
+                        toast(getString(R.string.toast_write_failed))
                     }
                 }
             }
@@ -269,45 +274,61 @@ class MainActivity : Activity() {
 
     private fun refreshStatus() {
         val enabled = isAccessibilityEnabled()
-        accessibilityValue.text = if (enabled) "已开启" else "未开启"
+        accessibilityValue.text = getString(
+            if (enabled) R.string.state_enabled else R.string.state_disabled
+        )
         accessibilityValue.setTextColor(if (enabled) colorOk else colorWarn)
 
         val shizukuAvailable = ShizukuShell.isAvailable()
         val shizukuGranted = shizukuAvailable && ShizukuShell.hasPermission()
-        shizukuValue.text = when {
-            !shizukuAvailable -> "未运行"
-            shizukuGranted -> "已授权"
-            else -> "未授权"
-        }
+        shizukuValue.text = getString(
+            when {
+                !shizukuAvailable -> R.string.state_not_running
+                shizukuGranted -> R.string.state_granted
+                else -> R.string.state_not_granted
+            }
+        )
         shizukuValue.setTextColor(if (shizukuGranted) colorOk else colorWarn)
 
         val snap = MonitorService.instance?.snapshot()
         if (snap == null) {
-            usedValue.text = "服务未运行"
+            usedValue.text = getString(R.string.state_service_stopped)
             leftValue.text = "--"
             phaseValue.text = "--"
             return
         }
         val totalMin = (prefs.thresholdMs / 60_000L)
         usedValue.text = formatDuration(snap.effectiveMs)
-        leftValue.text = "${formatDuration(snap.remainingMs)}（阈值 $totalMin 分钟）"
-        phaseValue.text = when {
-            snap.gazeSuspended -> "未检测到注视，已暂停"
-            snap.phase.name == "GAZE" -> "注视计时中"
-            snap.phase.name == "SCREEN" -> "亮屏计时中"
-            else -> "已暂停（屏幕熄灭）"
-        }
+        leftValue.text = getString(
+            R.string.fmt_until_break, formatDuration(snap.remainingMs), totalMin
+        )
+        phaseValue.text = getString(
+            when {
+                snap.gazeSuspended -> R.string.phase_no_gaze
+                snap.phase.name == "GAZE" -> R.string.phase_gaze
+                snap.phase.name == "SCREEN" -> R.string.phase_screen
+                else -> R.string.phase_screen_off
+            }
+        )
 
         val currentPercent = currentBrightnessPercent()
         val minPercent = prefs.minBrightnessPercent
         brightnessValue.text = when {
-            currentPercent < 0 -> "读取失败"
-            minPercent > 0 -> "$currentPercent%（下限 $minPercent%）"
-            else -> "$currentPercent%"
+            currentPercent < 0 -> getString(R.string.state_read_failed)
+            minPercent > 0 -> getString(
+                R.string.fmt_brightness_with_min, currentPercent, minPercent
+            )
+            else -> getString(R.string.fmt_percent, currentPercent)
         }
-        minBrightnessValue.text = if (minPercent > 0) "$minPercent%" else "未设置"
+        minBrightnessValue.text = if (minPercent > 0) {
+            getString(R.string.fmt_percent, minPercent)
+        } else {
+            getString(R.string.state_not_set)
+        }
         val writable = canWriteSettings()
-        writeSettingsValue.text = if (writable) "已授权" else "未授权"
+        writeSettingsValue.text = getString(
+            if (writable) R.string.state_granted else R.string.state_not_granted
+        )
         writeSettingsValue.setTextColor(if (writable) colorOk else colorWarn)
     }
 
@@ -409,7 +430,11 @@ class MainActivity : Activity() {
         val totalSec = ms / 1000L
         val min = totalSec / 60L
         val sec = totalSec % 60L
-        return if (min > 0L) "${min}分${sec}秒" else "${sec}秒"
+        return if (min > 0L) {
+            getString(R.string.fmt_duration_min_sec, min, sec)
+        } else {
+            getString(R.string.fmt_duration_sec, sec)
+        }
     }
 
     private fun dp(v: Int): Int =

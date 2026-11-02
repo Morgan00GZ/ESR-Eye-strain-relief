@@ -15,6 +15,7 @@ import android.os.Looper
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import com.eyestrainrelief.R
 import com.eyestrainrelief.access.GuardAccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.view.accessibility.AccessibilityManager
@@ -352,7 +353,7 @@ class MonitorService : Service() {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (nm.getNotificationChannel(CHANNEL_ID) != null) return
         val channel = NotificationChannel(
-            CHANNEL_ID, "屏幕计时", NotificationManager.IMPORTANCE_MIN
+            CHANNEL_ID, getString(R.string.channel_name), NotificationManager.IMPORTANCE_MIN
         ).apply {
             setShowBadge(false)
             enableVibration(false)
@@ -369,8 +370,8 @@ class MonitorService : Service() {
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_recent_history)
-            .setContentTitle("屏幕休息提醒")
-            .setContentText("正在统计屏幕使用时长")
+            .setContentTitle(getString(R.string.notif_title))
+            .setContentText(getString(R.string.notif_tracking))
             .setOngoing(true)
             .setSilent(true)
             .setPriority(NotificationCompat.PRIORITY_MIN)
@@ -399,10 +400,13 @@ class MonitorService : Service() {
         val usedMin = snap.effectiveMs / 60_000L
         val leftMin = snap.remainingMs / 60_000L
         val text = when {
-            !isGuardEnabled() -> "无障碍服务未开启，浮窗无法显示"
-            snap.gazeSuspended -> "未检测到注视，已暂停（已用 ${usedMin} 分钟）"
-            snap.accumulating -> "已用 ${usedMin} 分钟，距提醒约 ${leftMin} 分钟"
-            else -> "已用 ${usedMin} 分钟（屏幕熄灭，暂停计时）"
+            !isGuardEnabled() -> getString(R.string.notif_guard_off)
+            snap.gazeSuspended ->
+                getString(R.string.notif_gaze_paused, usedMin.toInt())
+            snap.accumulating ->
+                getString(R.string.notif_used, usedMin.toInt(), leftMin.toInt())
+            else ->
+                getString(R.string.notif_screen_off, usedMin.toInt())
         }
         // 文案没变就不重复通知，避免看门狗每 30 秒刷一次系统通知
         if (text == lastNotificationText) return
@@ -412,7 +416,7 @@ class MonitorService : Service() {
             NOTIFICATION_ID,
             NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_menu_recent_history)
-                .setContentTitle("屏幕休息提醒")
+                .setContentTitle(getString(R.string.notif_title))
                 .setContentText(text)
                 .setOngoing(true)
                 .setSilent(true)
@@ -427,8 +431,8 @@ class MonitorService : Service() {
             NOTIFICATION_ID + 1,
             NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                .setContentTitle("无法显示休息浮窗")
-                .setContentText("请在系统设置中开启 ESR 的无障碍服务")
+                .setContentTitle(getString(R.string.notif_cannot_show))
+                .setContentText(getString(R.string.notif_enable_guard))
                 .setAutoCancel(true)
                 .build()
         )
