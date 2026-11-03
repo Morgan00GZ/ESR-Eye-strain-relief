@@ -10,7 +10,7 @@
     <!-- 主界面：标题区说明 -->
     <string name="intro_main">A full-screen rest overlay appears once continuous screen time reaches the limit, and dismisses itself when the countdown ends.</string>
     <string name="intro_escape">Press volume down 5 times while the overlay is shown to exit immediately.</string>
-    <string name="intro_brightness">Minimum brightness: when screen brightness drops below this value it is pulled back up. Set 0 or leave empty to disable.</string>
+    <string name="intro_brightness">Minimum brightness: enter a control value from 0 to 255; brightness below it is pulled back up. Empty or 0 disables it. The system slider is not linear — 64 sits about halfway up.</string>
 
     <!-- 主界面：状态行标签 -->
     <string name="label_accessibility">Accessibility service</string>
@@ -33,16 +33,16 @@
 
     <!-- 主界面：输入与提示 -->
     <string name="title_threshold">Threshold (minutes)</string>
-    <string name="hint_brightness">Minimum brightness % (1-100, 0 or empty = off)</string>
+    <string name="hint_brightness">Minimum brightness control value (1-255), empty or 0 = off</string>
     <string name="toast_shizuku_missing">Shizuku not detected. Start the Shizuku service first.</string>
     <string name="toast_shizuku_granted">Shizuku is already granted</string>
     <string name="toast_need_accessibility">Enable the accessibility service first</string>
     <string name="toast_reset_done">Counter reset</string>
     <string name="toast_invalid_minutes">Enter a positive number of minutes</string>
     <string name="toast_threshold_saved">Saved: %1$d minutes</string>
-    <string name="toast_invalid_brightness">Enter an integer between 0 and 100 (0 = off)</string>
+    <string name="toast_invalid_brightness">Enter an integer between 0 and 255 (0 = off)</string>
     <string name="toast_brightness_off">Minimum brightness disabled</string>
-    <string name="toast_brightness_saved">Minimum brightness set to %1$d%%</string>
+    <string name="toast_brightness_saved">Minimum brightness set to %1$d (about %2$d%% up the bar)</string>
     <string name="toast_write_granted">Permission already granted</string>
     <string name="toast_write_failed">Cannot open the settings page. Grant it manually in Special access → Modify system settings.</string>
 
@@ -62,8 +62,8 @@
 
     <!-- 数值格式 -->
     <string name="fmt_until_break">%1$s (limit %2$d min)</string>
-    <string name="fmt_brightness_with_min">%1$d%% (min %2$d%%)</string>
-    <string name="fmt_percent">%1$d%%</string>
+    <string name="fmt_brightness_with_min">%1$d (about %2$d%% up the bar, min %3$d)</string>
+    <string name="fmt_value_with_pos">%1$d (about %2$d%% up the bar)</string>
     <string name="fmt_duration_min_sec">%1$d min %2$d s</string>
     <string name="fmt_duration_sec">%1$d s</string>
 

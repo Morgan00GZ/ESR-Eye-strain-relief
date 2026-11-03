@@ -26,6 +26,7 @@ import android.widget.TextView
 import com.eyestrainrelief.R
 import android.widget.Toast
 import com.eyestrainrelief.access.GuardAccessibilityService
+import com.eyestrainrelief.brightness.BrightnessGuard
 import com.eyestrainrelief.core.Prefs
 import com.eyestrainrelief.service.MonitorService
 import com.eyestrainrelief.shell.ShizukuShell
@@ -224,7 +225,7 @@ class MainActivity : Activity() {
             inputType = InputType.TYPE_CLASS_NUMBER
             hint = getString(R.string.hint_brightness)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
-            val saved = prefs.minBrightnessPercent
+            val saved = prefs.minBrightnessValue
             setText(if (saved > 0) saved.toString() else "")
         }
         root.addView(
@@ -237,15 +238,19 @@ class MainActivity : Activity() {
         root.addView(
             actionButton(getString(R.string.btn_save_brightness)) {
                 val raw = brightnessInput.text.toString().trim()
-                val percent = if (raw.isEmpty()) 0 else (raw.toIntOrNull() ?: -1)
-                if (percent < 0 || percent > 100) {
+                val value = if (raw.isEmpty()) 0 else (raw.toIntOrNull() ?: -1)
+                if (value < 0 || value > Prefs.MAX_BRIGHTNESS) {
                     toast(getString(R.string.toast_invalid_brightness))
                 } else {
-                    prefs.minBrightnessPercent = percent
+                    prefs.minBrightnessValue = value
                     MonitorService.start(this)
                     toast(
-                        if (percent == 0) getString(R.string.toast_brightness_off)
-                        else getString(R.string.toast_brightness_saved, percent)
+                        if (value == 0) getString(R.string.toast_brightness_off)
+                        else getString(
+                            R.string.toast_brightness_saved,
+                            value,
+                            BrightnessGuard.estimateBarPercent(value)
+                        )
                     )
                 }
             }
@@ -311,17 +316,28 @@ class MainActivity : Activity() {
             }
         )
 
-        val currentPercent = currentBrightnessPercent()
-        val minPercent = prefs.minBrightnessPercent
+        val currentValue = currentBrightnessValue()
+        val minValue = prefs.minBrightnessValue
         brightnessValue.text = when {
-            currentPercent < 0 -> getString(R.string.state_read_failed)
-            minPercent > 0 -> getString(
-                R.string.fmt_brightness_with_min, currentPercent, minPercent
+            currentValue < 0 -> getString(R.string.state_read_failed)
+            minValue > 0 -> getString(
+                R.string.fmt_brightness_with_min,
+                currentValue,
+                BrightnessGuard.estimateBarPercent(currentValue),
+                minValue
             )
-            else -> getString(R.string.fmt_percent, currentPercent)
+            else -> getString(
+                R.string.fmt_value_with_pos,
+                currentValue,
+                BrightnessGuard.estimateBarPercent(currentValue)
+            )
         }
-        minBrightnessValue.text = if (minPercent > 0) {
-            getString(R.string.fmt_percent, minPercent)
+        minBrightnessValue.text = if (minValue > 0) {
+            getString(
+                R.string.fmt_value_with_pos,
+                minValue,
+                BrightnessGuard.estimateBarPercent(minValue)
+            )
         } else {
             getString(R.string.state_not_set)
         }
@@ -332,13 +348,13 @@ class MainActivity : Activity() {
         writeSettingsValue.setTextColor(if (writable) colorOk else colorWarn)
     }
 
-    private fun currentBrightnessPercent(): Int = try {
-        val value = Settings.System.getInt(
+    /** 当前系统亮度控制值（0–255），与设置里存的是同一套刻度 */
+    private fun currentBrightnessValue(): Int = try {
+        Settings.System.getInt(
             contentResolver,
             Settings.System.SCREEN_BRIGHTNESS,
             -1
         )
-        if (value < 0) -1 else (value * 100 / 255)
     } catch (_: Throwable) {
         -1
     }

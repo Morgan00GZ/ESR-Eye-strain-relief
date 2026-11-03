@@ -8,7 +8,7 @@
 
     <string name="intro_main">屏幕连续使用达到阈值后弹出全屏休息浮窗，倒计时结束自动消失。</string>
     <string name="intro_escape">浮窗出现时连续按音量下键 5 次可紧急退出，用于异常情况自保。</string>
-    <string name="intro_brightness">最低亮度：屏幕亮度低于该值时自动拉回，设为 0 或留空则不启用。</string>
+    <string name="intro_brightness">最低亮度：填 0–255 的亮度控制值，屏幕亮度低于它就自动拉回；留空或 0 表示关闭。系统亮度条不是线性刻度，控制值 64 大约走到条的一半。</string>
 
     <string name="label_accessibility">无障碍服务</string>
     <string name="label_shizuku">Shizuku 权限</string>
@@ -28,16 +28,16 @@
     <string name="btn_allow_write_settings">允许修改系统设置</string>
 
     <string name="title_threshold">阈值（分钟）</string>
-    <string name="hint_brightness">最低亮度 %（1-100，0 或留空 = 关闭）</string>
+    <string name="hint_brightness">最低亮度控制值（1–255），留空或 0 = 关闭</string>
     <string name="toast_shizuku_missing">未检测到 Shizuku，请先在手机上启动 Shizuku 服务</string>
     <string name="toast_shizuku_granted">Shizuku 已授权</string>
     <string name="toast_need_accessibility">请先开启无障碍服务</string>
     <string name="toast_reset_done">已重置</string>
     <string name="toast_invalid_minutes">请输入正整数分钟</string>
     <string name="toast_threshold_saved">已保存，阈值 %1$d 分钟</string>
-    <string name="toast_invalid_brightness">请输入 0-100 的整数，0 表示关闭</string>
+    <string name="toast_invalid_brightness">请输入 0–255 的整数，0 表示关闭</string>
     <string name="toast_brightness_off">已关闭最低亮度</string>
-    <string name="toast_brightness_saved">已设置最低亮度 %1$d%%</string>
+    <string name="toast_brightness_saved">已设置最低亮度 %1$d（条上约 %2$d%%）</string>
     <string name="toast_write_granted">已具备修改亮度的权限</string>
     <string name="toast_write_failed">无法打开设置页，请手动到「特殊权限 → 修改系统设置」授权</string>
 
@@ -55,8 +55,8 @@
     <string name="phase_screen_off">已暂停（屏幕熄灭）</string>
 
     <string name="fmt_until_break">%1$s（阈值 %2$d 分钟）</string>
-    <string name="fmt_brightness_with_min">%1$d%%（下限 %2$d%%）</string>
-    <string name="fmt_percent">%1$d%%</string>
+    <string name="fmt_brightness_with_min">%1$d（条上约 %2$d%%，下限 %3$d）</string>
+    <string name="fmt_value_with_pos">%1$d（条上约 %2$d%%）</string>
     <string name="fmt_duration_min_sec">%1$d分%2$d秒</string>
     <string name="fmt_duration_sec">%1$d秒</string>
 

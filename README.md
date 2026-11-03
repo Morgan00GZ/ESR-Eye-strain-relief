@@ -108,6 +108,28 @@ A `ContentObserver` watches `Settings.System.SCREEN_BRIGHTNESS`. When the value 
 - Fallback: `settings put system screen_brightness N` through Shizuku / 退化路径：经 Shizuku 执行命令
 - Idempotent — the write triggers the observer again, but the value is already at the floor / 幂等：写回会再次触发监听，但此时已达标直接返回
 
+**The floor is a raw control value, not a percentage / 下限是原始控制值，不是百分比**
+
+`SCREEN_BRIGHTNESS` ranges from 0 to 255 on the tested device (`config_screenBrightnessSettingMaximum = 255`, minimum `10`), but the system slider is **not** linear in that value. Measured on the real device (HyperOS 4) by pixel-measuring the slider:
+
+| Control value | 20 | 40 | 64 | 100 | 128 | 200 |
+|---|---|---|---|---|---|---|
+| Slider position | 32% | 40% | 49% | 60% | 69% | 84% |
+
+This fits `position ≈ 100 × √(value / 255)`. So a control value of 64 sits at about half of the slider, not at 25%. The panel curve is even steeper: `dumpsys display` reports 0.037 → 59.8 nits, 0.5 → 800 nits, 1.0 → 3500 nits, with 3500 only reachable through HBM in bright ambient light.
+
+Because of this, the UI stores and shows the **control value** and displays an estimated slider position next to it, rather than pretending it is a percentage. The estimate uses the fitted curve above and is labelled "about" — on stock Android, where the slider is linear, it will read high.
+
+`SCREEN_BRIGHTNESS` 在实测机型上取值 0–255（`config_screenBrightnessSettingMaximum = 255`，最小 `10`），但系统亮度条与这个值**不成线性**。在真机上对亮度条做像素级实测：
+
+| 控制值 | 20 | 40 | 64 | 100 | 128 | 200 |
+|---|---|---|---|---|---|---|
+| 滑块位置 | 32% | 40% | 49% | 60% | 69% | 84% |
+
+拟合为 `位置 ≈ 100 × √(值 / 255)`。也就是说控制值 64 大约在亮度条一半的位置，而不是 25%。面板本身的曲线更陡：`dumpsys display` 显示 0.037 → 59.8 尼特、0.5 → 800 尼特、1.0 → 3500 尼特，其中 3500 只有在强光下的 HBM 才可达。
+
+因此界面存的和显示的都是**控制值**，旁边附一个估算的亮度条位置，不宣称它是百分比。估算用的是上面这条拟合曲线，标注为「约」；在原生 Android（线性刻度）上读数会偏高。
+
 ### 6. End alert / 结束提示
 
 Deliberately **not** a notification. Playing `RingtoneManager` + `Vibrator` directly keeps the notification shade and history clean.

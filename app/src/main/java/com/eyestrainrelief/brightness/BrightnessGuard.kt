@@ -9,12 +9,16 @@ import android.util.Log
 import com.eyestrainrelief.core.Prefs
 import com.eyestrainrelief.shell.ShizukuShell
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 /**
  * 最低亮度守卫。
  *
  * 用 ContentObserver 监听 SCREEN_BRIGHTNESS，属于事件驱动，没有任何轮询开销：
  * 只有亮度真的变化时才醒一次，值低于阈值就写回。
+ *
+ * 阈值直接是系统亮度控制值（0–255），不是百分比。原因：系统亮度条用感知刻度
+ * （实机实测约为 100·√(值/255)），0–255 与条上位置差得很远，把它当百分比会误导。
  *
  * 写入走双通道：优先 WRITE_SETTINGS（无 IPC 延迟，拖动滑块时不会卡），
  * 没有该权限则退回 Shizuku 执行 settings 命令。
@@ -66,13 +70,13 @@ class BrightnessGuard(
      * 检查并拉回。幂等：写回后会再次触发 observer，此时值已达标直接返回，不会形成死循环。
      */
     fun enforce() {
-        val percent = prefs.minBrightnessPercent
-        if (percent <= 0) return
-        val minValue = (percent / 100.0 * MAX_BRIGHTNESS).roundToInt().coerceIn(1, MAX_BRIGHTNESS)
+        val minValue = prefs.minBrightnessValue
+        if (minValue <= 0) return
+        val floor = minValue.coerceIn(1, Prefs.MAX_BRIGHTNESS)
         val current = readCurrent()
-        if (current < 0 || current >= minValue) return
-        Log.d(TAG, "brightness $current below min $minValue, restoring")
-        write(minValue)
+        if (current < 0 || current >= floor) return
+        Log.d(TAG, "brightness $current below min $floor, restoring")
+        write(floor)
     }
 
     private fun readCurrent(): Int = try {
@@ -111,25 +115,23 @@ class BrightnessGuard(
         false
     }
 
-    /** 自动亮度是否开启——开启时本功能会被系统持续覆盖，需要在界面上提示 */
-    fun isAutoBrightnessOn(): Boolean = try {
-        Settings.System.getInt(
-            appContext.contentResolver,
-            Settings.System.SCREEN_BRIGHTNESS_MODE,
-            Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL
-        ) == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
-    } catch (_: Throwable) {
-        false
-    }
+    /** 当前系统亮度控制值（0–255），读不到返回 -1 */
+    fun readCurrentValue(): Int = readCurrent()
 
-    fun readCurrentPercent(): Int {
-        val value = readCurrent()
-        if (value < 0) return -1
-        return (value * 100.0 / MAX_BRIGHTNESS).roundToInt()
-    }
+    companion object {
+        private const val TAG = "ESR"
 
-    private companion object {
-        const val TAG = "ESR"
-        const val MAX_BRIGHTNESS = 255
+        /**
+         * 把亮度控制值换算成亮度条上的位置（0–100），仅用于界面显示。
+         *
+         * 系统亮度条不是线性刻度：实测机型（HyperOS 4）上约为 100·√(值/255)，
+         * 控制值 64 只走到亮度条的一半。原生 Android 是线性刻度，此处会偏高，
+         * 所以界面上标注「约」。本换算不参与任何判定逻辑。
+         */
+        fun estimateBarPercent(value: Int): Int {
+            if (value <= 0) return 0
+            val ratio = value.coerceAtMost(Prefs.MAX_BRIGHTNESS).toDouble() / Prefs.MAX_BRIGHTNESS
+            return (100.0 * sqrt(ratio)).roundToInt().coerceIn(1, 100)
+        }
     }
 }
