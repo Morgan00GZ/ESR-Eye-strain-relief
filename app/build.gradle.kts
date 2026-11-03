@@ -11,8 +11,8 @@ android {
         applicationId = "com.eyestrainrelief"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.3.0"
+        versionCode = 31
+        versionName = "0.31"
     }
 
     buildTypes {
