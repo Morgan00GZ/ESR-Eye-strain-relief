@@ -130,6 +130,36 @@ Because of this, the UI stores and shows the **control value** and displays an e
 
 因此界面存的和显示的都是**控制值**，旁边附一个估算的亮度条位置，不宣称它是百分比。估算用的是上面这条拟合曲线，标注为「约」；在原生 Android（线性刻度）上读数会偏高。
 
+**Known interaction with auto-brightness / 与自动亮度的已知交互**
+
+When auto-brightness is on, pulling the floor back is itself a manual brightness change, and Android responds by activating a **short-term model**: the auto curve is anchored at the current ambient lux and stops tracking ambient light. Measured on the tested device:
+
+| Field | Value |
+|---|---|
+| `mWasShortTermModelActive` | `true` after any manual write |
+| `shortTermModelTimeout` | `300000` ms (5 minutes) |
+| `shortTermModelLower/UpperLuxMultiplier` | `0.6` |
+| `mAmbientLux` / `mLastObservedLux` | still updating (sensor is fine) |
+| `BrightnessEvent` log | no new entries while the model is active |
+
+So during those 5 minutes the screen stops adapting to ambient light; toggling the auto-brightness switch resets the model via `resetShortTermModel()` and restores normal tracking. This is **Android's own behaviour**, not a defect of this app — dragging the slider manually produces exactly the same effect.
+
+Deliberately **not** resetting the model after each pull-back: the auto algorithm wants a lower value than the floor, so resetting would let both sides fight every second (light debounce is 1000 ms, ramp 0.30/s), producing a continuous brightness oscillation plus a `settings` write per cycle. Letting the model lock is stable, and during the lock the screen never dims below the floor — which is the intended outcome anyway.
+
+自动亮度开启时，把亮度拉回本身就是一次「手动改亮度」，系统会因此启用**短期亮度模型**：把自动亮度曲线锚定在当前环境光上，不再跟随环境变化。在实测机型上量到的状态：
+
+| 字段 | 值 |
+|---|---|
+| `mWasShortTermModelActive` | 任何手动写入后变为 `true` |
+| `shortTermModelTimeout` | `300000` 毫秒（5 分钟） |
+| `shortTermModelLower/UpperLuxMultiplier` | `0.6` |
+| `mAmbientLux` / `mLastObservedLux` | 仍在正常刷新（传感器没坏） |
+| `BrightnessEvent` 日志 | 模型生效期间不再产生新记录 |
+
+也就是说这 5 分钟内屏幕不再随环境光变化；切换一次自动亮度开关会调用 `resetShortTermModel()`，立刻恢复正常跟随。这是 **Android 自身的行为**，不是本应用的缺陷——手动拖一次亮度条会得到完全相同的效果。
+
+这里刻意**不**在每次拉回后重置模型：自动亮度算法想要的值低于下限，一旦重置，两边就会每秒较劲一次（变暗防抖 1000 毫秒，ramp 0.30/秒），导致亮度持续来回浮动，并且每轮还要写一次 `settings`。让模型锁住是稳定的，而且锁定期间屏幕根本不会暗过下限——恰好就是想要的结果。
+
 ### 6. End alert / 结束提示
 
 Deliberately **not** a notification. Playing `RingtoneManager` + `Vibrator` directly keeps the notification shade and history clean.
