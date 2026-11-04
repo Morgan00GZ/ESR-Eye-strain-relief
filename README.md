@@ -322,9 +322,9 @@ Things that cost the most time and are easy to get wrong.
 
 ## Historical notes / 历史记录
 
-`docs/` keeps the development exploration records, including the abandoned LockTask approach and the measurements that led to dropping it. Where they disagree with this README, the README is authoritative.
+`docs/archive/` keeps the development exploration records from 2026-10-29 / 10-30, including the abandoned LockTask approach and the measurements that led to dropping it. It has its own README explaining what each file is and why the approach failed. Where they disagree with this README, this README is authoritative.
 
-`docs/` 保存了开发过程中的探索记录，包含已放弃的 LockTask 方案以及导致放弃的实测数据。与本文档冲突之处，以本文档为准。
+`docs/archive/` 保存 2026-10-29 / 10-30 的开发探索记录，包含已放弃的 LockTask 方案以及导致放弃的实测数据。该目录自带一份 README 说明每个文件是什么、方案为什么失败。与本文档冲突之处，以本文档为准。
 
 ---
 
