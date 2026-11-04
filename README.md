@@ -336,6 +336,6 @@ MIT，见 [`LICENSE`](LICENSE)。
 
 ## Version history / 版本记录
 
-See [`CHANGELOG.md`](CHANGELOG.md) for what changed in each release, and `snapshots/v<version>/` for the APK and a fuller write-up of that version.
+See [`CHANGELOG.md`](CHANGELOG.md) for what changed in each release. Release APKs live on the [Releases](../../releases) page; the local `snapshots/v<version>/` folder keeps a copy plus a fuller write-up of each version, but it is git-ignored and not part of the repository.
 
-每个版本改了什么见 [`CHANGELOG.md`](CHANGELOG.md)；各版本的 APK 与更详细的说明在 `snapshots/v<版本>/`。
+每个版本改了什么见 [`CHANGELOG.md`](CHANGELOG.md)。发布用的 APK 在 [Releases](../../releases) 页面；本地 `snapshots/v<版本>/` 另存一份 APK 与更详细的说明，但该目录被 git 忽略，不属于仓库内容。
