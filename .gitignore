@@ -1,9 +1,7 @@
+# ---- Build output / 构建产物 ----
 *.iml
 .gradle/
 .kotlin/
-/local.properties
-/.idea/
-.DS_Store
 /build
 /captures
 .externalNativeBuild
@@ -11,5 +9,18 @@
 /app/build/
 *.apk
 *.aab
-!snapshots/**/*.apk
 *.log
+
+# ---- Local machine / 本机专属 ----
+/local.properties
+/.idea/
+.DS_Store
+
+# ---- Local-only, never pushed / 只在本地，不随仓库发布 ----
+# Version archives: the APKs are attached to GitHub Releases instead.
+# 版本存档：APK 走 GitHub Releases，不进仓库。
+/snapshots/
+
+# Personal build and release scripts, with paths tuned to this machine.
+# 本机专用的构建与发版脚本，路径是按这台机器写的。
+/tools/
