@@ -330,4 +330,12 @@ Things that cost the most time and are easy to get wrong.
 
 ## License
 
-MIT
+MIT — see [`LICENSE`](LICENSE).
+
+MIT，见 [`LICENSE`](LICENSE)。
+
+## Version history / 版本记录
+
+See [`CHANGELOG.md`](CHANGELOG.md) for what changed in each release, and `snapshots/v<version>/` for the APK and a fuller write-up of that version.
+
+每个版本改了什么见 [`CHANGELOG.md`](CHANGELOG.md)；各版本的 APK 与更详细的说明在 `snapshots/v<版本>/`。
