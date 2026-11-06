@@ -12,7 +12,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); version numbers 
 
 ## [Unreleased] / 未发布
 
-Nothing yet. / 暂无。
+### Changed / 变更
+
+- **Removed a machine-specific path from `gradle.properties`.** The file used to pin `android.aapt2FromMavenOverride` to an absolute path on the development machine (`<local>/AndroidDev/sdk/...`). That override is genuinely needed there — without it a clean build dies on `stableIds.txt: failed to open: 数据无效 (13)` — but committed to the repository it becomes a broken reference for anyone else, and on a different layout it could even point at the wrong binary. The line now lives in the developer's **user-level** `gradle.properties`, and the README explains how to apply the same workaround locally. Project-level `gradle.properties` is back to generic settings only.
+  **从 `gradle.properties` 去掉了一条本机绝对路径。** 该文件原先把 `android.aapt2FromMavenOverride` 钉死在本机的绝对路径上。这条覆盖项在本机确实必需——没有它 clean 构建会挂在 `stableIds.txt: failed to open: 数据无效 (13)`——但提交进仓库后，对其他人就是一个失效引用，换一种目录布局还可能指向错误的二进制。现在这条配置放在开发者的**用户级** `gradle.properties` 里，README 说明了如何在本地自行配置。项目级 `gradle.properties` 恢复为只放通用配置。
+- Verified with a full `clean` + `assembleDebug`: BUILD SUCCESSFUL, and the resulting APK is content-identical to the v0.31 archive (108 entries, all CRC32 and total compressed size equal). No version bump, no new snapshot.
+  已用完整的 `clean` + `assembleDebug` 验证：BUILD SUCCESSFUL，产物与 v0.31 存档内容一致（108 个条目，全部 CRC32 与压缩后总计相等）。未升版本号，未重做快照。
 
 ---
 

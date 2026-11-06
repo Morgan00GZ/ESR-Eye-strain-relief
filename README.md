@@ -251,6 +251,38 @@ Gradle 8.9 / JDK 17 / Android SDK 35 are what the project was developed against.
 
 开发环境为 Gradle 8.9 / JDK 17 / Android SDK 35。
 
+### If `processDebugResources` fails on a Chinese-locale Windows / 中文 Windows 上资源编译失败
+
+On a Chinese-locale Windows machine the aapt2 binary that AGP downloads from Maven may fail to write its `--emit-ids` target file. A clean build then stops with:
+
+```
+:app:processDebugResources FAILED
+stableIds.txt: error: failed to open: 数据无效 (13)
+```
+
+Fix it on **your own machine**, never in this repository: put the line below into your **user-level** `gradle.properties` (the one in your Gradle user home — check it with `gradle --version`; on a portable toolchain it is often not `%USERPROFILE%\.gradle`), pointing at the aapt2 that ships with your SDK build-tools:
+
+```properties
+android.aapt2FromMavenOverride=<SDK>/build-tools/<version>/aapt2.exe
+```
+
+Note this only shows up on a **clean** build — incremental builds reuse the previous output and will happily hide the problem.
+
+中文 Windows 上，AGP 从 Maven 下载的 aapt2 可能写不了 `--emit-ids` 的目标文件，clean 构建会停在：
+
+```
+:app:processDebugResources FAILED
+stableIds.txt: error: failed to open: 数据无效 (13)
+```
+
+解决办法是**改自己机器**、不要改仓库：把下面这行写进你的**用户级** `gradle.properties`（在 Gradle 用户主目录里，用 `gradle --version` 查；便携工具链下往往不是 `%USERPROFILE%\.gradle`），指向你 SDK build-tools 自带的 aapt2：
+
+```properties
+android.aapt2FromMavenOverride=<SDK>/build-tools/<version>/aapt2.exe
+```
+
+注意这个问题**只在 clean 构建时暴露**——增量构建复用上次产物，会让人误以为没事。
+
 ---
 
 ## Project structure / 代码结构
